@@ -12,7 +12,25 @@ const io = socketIO(server);
 let waitingusers = [];
 
 io.on("connection", function (socket) {
-  console.log("connected");
+  socket.on("joinroom", function () {
+    if (waitingusers.length > 0) {
+      let roomname = uuidv4();
+      socket.join(roomname);
+      waitingusers[0].join(roomname);
+      waitingusers.pop();
+
+      io.to(roomname).emit("joined", roomname);
+    } else {
+      waitingusers.push(socket);
+    }
+  });
+
+  socket.on("signalingMessage", function (data) {
+    socket.broadcast.to(data.room).emit("signalingMessage", data.message);
+  });
+  socket.on("message", function (data) {
+    socket.broadcast.to(data.room).emit("message", data.message);
+  });
 });
 
 app.set("view engine", "ejs");
