@@ -31,6 +31,14 @@ io.on("connection", function (socket) {
   socket.on("message", function (data) {
     socket.broadcast.to(data.room).emit("message", data.message);
   });
+
+  socket.on("disconnect", function () {
+    let index = waitingusers.findIndex(
+      (waitingUser) => waitingUser.id === socket.id
+    );
+
+    waitingusers.splice(index, 1);
+  });
 });
 
 app.set("view engine", "ejs");
